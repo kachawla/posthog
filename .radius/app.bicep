@@ -408,6 +408,9 @@ resource cymbalContainer 'Radius.Compute/containers@2025-08-01-preview' = {
           KAFKA_HOSTS: {
             value: kafkaHosts
           }
+          MAXMIND_DB_PATH: {
+            value: '/app/share/GeoLite2-City.mmdb'
+          }
           OBJECT_STORAGE_ACCESS_KEY_ID: {
             value: 'any'
           }
@@ -537,6 +540,9 @@ resource featureFlagsContainer 'Radius.Compute/containers@2025-08-01-preview' = 
           }
           COOKIELESS_REDIS_PORT: {
             value: '6379'
+          }
+          MAXMIND_DB_PATH: {
+            value: '/app/share/GeoLite2-City.mmdb'
           }
           POSTHOG_DB_PASSWORD: {
             valueFrom: {
@@ -941,7 +947,7 @@ resource kafkaContainer 'Radius.Compute/containers@2025-08-01-preview' = {
           'start'
           '--kafka-addr internal://0.0.0.0:9092'
           '--advertise-kafka-addr internal://kafka-kafka:9092'
-          '--rpc-addr kafka-kafka:33145'
+          '--rpc-addr 0.0.0.0:33145'
           '--advertise-rpc-addr kafka-kafka:33145'
           '--mode dev-container'
           '--smp 2'
@@ -1534,6 +1540,15 @@ resource temporalContainer 'Radius.Compute/containers@2025-08-01-preview' = {
           POSTGRES_USER: {
             value: 'myadmin'
           }
+          SQL_TLS: {
+            value: 'true'
+          }
+          SQL_TLS_DISABLE_HOST_VERIFICATION: {
+            value: 'true'
+          }
+          SQL_TLS_ENABLED: {
+            value: 'true'
+          }
         }
         ports: {
           grpc: {
@@ -1765,7 +1780,7 @@ resource webContainer 'Radius.Compute/containers@2025-08-01-preview' = {
             }
           }
           SKIP_ASYNC_MIGRATIONS_SETUP: {
-            value: '0'
+            value: '1'
           }
         }
         initContainer: true
