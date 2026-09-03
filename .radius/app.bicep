@@ -17,12 +17,6 @@ param postgresPassword string
 @secure()
 param posthogSecretKey string
 
-@secure()
-param registryPassword string
-
-@secure()
-param registryUsername string
-
 param siteUrl string = 'http://localhost:8000'
 
 var clickhouseHost = clickhouseContainer.properties.hosts.clickhouse
@@ -188,257 +182,6 @@ resource postgresSecret 'Radius.Security/secrets@2025-08-01-preview' = {
   }
 }
 
-resource registryCreds 'Radius.Security/secrets@2025-08-01-preview' = {
-  name: 'radius-ghcr-registry-creds'
-  properties: {
-    environment: environment
-    application: posthogApp.id
-    codeReference: '.github/workflows/container-images-cd.yml'
-    data: {
-      password: {
-        value: registryPassword
-      }
-      username: {
-        value: registryUsername
-      }
-    }
-  }
-}
-
-resource captureImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'capture-image'
-  properties: {
-    environment: environment
-    application: posthogApp.id
-    build: {
-      args: {
-        BIN: 'capture'
-      }
-      platforms: [
-        'linux/amd64'
-      ]
-      source: 'git::https://github.com/kachawla/posthog.git//rust?ref=d719e370f0ed05892a6971657a528ac2d1fffef3'
-    }
-    codeReference: 'rust/Dockerfile'
-    tag: 'd719e37'
-  }
-  dependsOn: [
-    registryCreds
-  ]
-}
-
-resource captureLogsImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'capture-logs-image'
-  properties: {
-    environment: environment
-    application: posthogApp.id
-    build: {
-      args: {
-        BIN: 'capture-logs'
-      }
-      platforms: [
-        'linux/amd64'
-      ]
-      source: 'git::https://github.com/kachawla/posthog.git//rust?ref=d719e370f0ed05892a6971657a528ac2d1fffef3'
-    }
-    codeReference: 'rust/Dockerfile'
-    tag: 'd719e37'
-  }
-  dependsOn: [
-    registryCreds
-  ]
-}
-
-resource cymbalImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'cymbal-image'
-  properties: {
-    environment: environment
-    application: posthogApp.id
-    build: {
-      args: {
-        BIN: 'cymbal'
-      }
-      platforms: [
-        'linux/amd64'
-      ]
-      source: 'git::https://github.com/kachawla/posthog.git//rust?ref=d719e370f0ed05892a6971657a528ac2d1fffef3'
-    }
-    codeReference: 'rust/Dockerfile'
-    tag: 'd719e37'
-  }
-  dependsOn: [
-    registryCreds
-  ]
-}
-
-resource featureFlagsImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'feature-flags-image'
-  properties: {
-    environment: environment
-    application: posthogApp.id
-    build: {
-      args: {
-        BIN: 'feature-flags'
-      }
-      platforms: [
-        'linux/amd64'
-      ]
-      source: 'git::https://github.com/kachawla/posthog.git//rust?ref=d719e370f0ed05892a6971657a528ac2d1fffef3'
-    }
-    codeReference: 'rust/Dockerfile'
-    tag: 'd719e37'
-  }
-  dependsOn: [
-    registryCreds
-  ]
-}
-
-resource hypercacheServerImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'hypercache-server-image'
-  properties: {
-    environment: environment
-    application: posthogApp.id
-    build: {
-      args: {
-        BIN: 'hypercache-server'
-      }
-      platforms: [
-        'linux/amd64'
-      ]
-      source: 'git::https://github.com/kachawla/posthog.git//rust?ref=d719e370f0ed05892a6971657a528ac2d1fffef3'
-    }
-    codeReference: 'rust/Dockerfile'
-    tag: 'd719e37'
-  }
-  dependsOn: [
-    registryCreds
-  ]
-}
-
-resource livestreamImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'livestream-image'
-  properties: {
-    environment: environment
-    application: posthogApp.id
-    build: {
-      platforms: [
-        'linux/amd64'
-      ]
-      source: 'git::https://github.com/kachawla/posthog.git//livestream?ref=d719e370f0ed05892a6971657a528ac2d1fffef3'
-    }
-    codeReference: 'livestream/Dockerfile'
-    tag: 'd719e37'
-  }
-  dependsOn: [
-    registryCreds
-  ]
-}
-
-resource personhogReplicaImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'personhog-replica-image'
-  properties: {
-    environment: environment
-    application: posthogApp.id
-    build: {
-      args: {
-        BIN: 'personhog-replica'
-      }
-      platforms: [
-        'linux/amd64'
-      ]
-      source: 'git::https://github.com/kachawla/posthog.git//rust?ref=d719e370f0ed05892a6971657a528ac2d1fffef3'
-    }
-    codeReference: 'rust/Dockerfile'
-    tag: 'd719e37'
-  }
-  dependsOn: [
-    registryCreds
-  ]
-}
-
-resource personhogRouterImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'personhog-router-image'
-  properties: {
-    environment: environment
-    application: posthogApp.id
-    build: {
-      args: {
-        BIN: 'personhog-router'
-      }
-      platforms: [
-        'linux/amd64'
-      ]
-      source: 'git::https://github.com/kachawla/posthog.git//rust?ref=d719e370f0ed05892a6971657a528ac2d1fffef3'
-    }
-    codeReference: 'rust/Dockerfile'
-    tag: 'd719e37'
-  }
-  dependsOn: [
-    registryCreds
-  ]
-}
-
-resource posthogImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'posthog-image'
-  properties: {
-    environment: environment
-    application: posthogApp.id
-    build: {
-      platforms: [
-        'linux/amd64'
-      ]
-      source: 'git::https://github.com/kachawla/posthog.git?ref=d719e370f0ed05892a6971657a528ac2d1fffef3'
-    }
-    codeReference: 'Dockerfile'
-    tag: 'd719e37'
-  }
-  dependsOn: [
-    registryCreds
-  ]
-}
-
-resource posthogNodeImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'posthog-node-image'
-  properties: {
-    environment: environment
-    application: posthogApp.id
-    build: {
-      dockerfile: 'Dockerfile.node'
-      platforms: [
-        'linux/amd64'
-      ]
-      source: 'git::https://github.com/kachawla/posthog.git?ref=d719e370f0ed05892a6971657a528ac2d1fffef3'
-    }
-    codeReference: 'Dockerfile.node'
-    tag: 'd719e37'
-  }
-  dependsOn: [
-    registryCreds
-  ]
-}
-
-resource propertyDefsRsImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'property-defs-rs-image'
-  properties: {
-    environment: environment
-    application: posthogApp.id
-    build: {
-      args: {
-        BIN: 'property-defs-rs'
-      }
-      platforms: [
-        'linux/amd64'
-      ]
-      source: 'git::https://github.com/kachawla/posthog.git//rust?ref=d719e370f0ed05892a6971657a528ac2d1fffef3'
-    }
-    codeReference: 'rust/Dockerfile'
-    tag: 'd719e37'
-  }
-  dependsOn: [
-    registryCreds
-  ]
-}
-
 resource browserlessContainer 'Radius.Compute/containers@2025-08-01-preview' = {
   name: 'browserless'
   properties: {
@@ -476,7 +219,7 @@ resource captureContainer 'Radius.Compute/containers@2025-08-01-preview' = {
     codeReference: 'rust/capture/src/main.rs'
     containers: {
       capture: {
-        image: captureImage.properties.imageReference
+        image: 'ghcr.io/posthog/posthog/capture@sha256:89d816e0125632911001189fe3151cbee07a60f7b47997dc208f34978f03a476'
         env: {
           ADDRESS: {
             value: '0.0.0.0:3000'
@@ -545,7 +288,7 @@ resource captureLogsContainer 'Radius.Compute/containers@2025-08-01-preview' = {
     codeReference: 'rust/capture-logs/src/main.rs'
     containers: {
       captureLogs: {
-        image: captureLogsImage.properties.imageReference
+        image: 'ghcr.io/posthog/posthog/capture-logs@sha256:2c6bb87b74c88623d48bb6d235c5b5d383af82caffd3d3ff32bce168144f90ed'
         env: {
           BIND_HOST: {
             value: '0.0.0.0'
@@ -646,7 +389,7 @@ resource cymbalContainer 'Radius.Compute/containers@2025-08-01-preview' = {
     codeReference: 'rust/cymbal/src/main.rs'
     containers: {
       cymbal: {
-        image: cymbalImage.properties.imageReference
+        image: 'ghcr.io/posthog/posthog/cymbal@sha256:5c542be55ddd114235c4ddc152ff407eaa699de0bb65255e4a0ab9220fb47644'
         command: [
           '/bin/sh'
           '-c'
@@ -724,7 +467,7 @@ resource cymbalResolutionContainer 'Radius.Compute/containers@2025-08-01-preview
     codeReference: 'rust/cymbal/src/main.rs'
     containers: {
       cymbalResolution: {
-        image: cymbalImage.properties.imageReference
+        image: 'ghcr.io/posthog/posthog/cymbal@sha256:5c542be55ddd114235c4ddc152ff407eaa699de0bb65255e4a0ab9220fb47644'
         command: [
           '/bin/sh'
           '-c'
@@ -790,7 +533,7 @@ resource featureFlagsContainer 'Radius.Compute/containers@2025-08-01-preview' = 
     codeReference: 'rust/feature-flags/src/main.rs'
     containers: {
       featureFlags: {
-        image: featureFlagsImage.properties.imageReference
+        image: 'ghcr.io/posthog/posthog/feature-flags@sha256:749dcfd23d7ba8c7125d4a9f3a9014e3744b2f02ad50463f9d04b591eca1bdea'
         command: [
           '/bin/sh'
           '-c'
@@ -845,7 +588,7 @@ resource hypercacheServerContainer 'Radius.Compute/containers@2025-08-01-preview
     codeReference: 'rust/hypercache-server/src/main.rs'
     containers: {
       hypercacheServer: {
-        image: hypercacheServerImage.properties.imageReference
+        image: 'ghcr.io/posthog/posthog/hypercache-server@sha256:738db2772f8e322a94e84762dbfe6cc55117a5003c184ddb189e29695c1ea2ee'
         env: {
           ADDRESS: {
             value: '0.0.0.0:3002'
@@ -881,7 +624,7 @@ resource ingestionErrorTrackingContainer 'Radius.Compute/containers@2025-08-01-p
     codeReference: 'nodejs/src/index.ts'
     containers: {
       ingestionErrorTracking: {
-        image: posthogNodeImage.properties.imageReference
+        image: 'docker.io/posthog/posthog-node@sha256:863e76e040ad41aef79f605c33ec71f1529bddf94cfd88941c935da9bde97235'
         args: [
           '/bin/sh'
           '-c'
@@ -933,7 +676,7 @@ resource ingestionGeneralContainer 'Radius.Compute/containers@2025-08-01-preview
     codeReference: 'nodejs/src/index.ts'
     containers: {
       ingestionGeneral: {
-        image: posthogNodeImage.properties.imageReference
+        image: 'docker.io/posthog/posthog-node@sha256:863e76e040ad41aef79f605c33ec71f1529bddf94cfd88941c935da9bde97235'
         args: [
           '/bin/sh'
           '-c'
@@ -1046,7 +789,7 @@ resource ingestionLogsContainer 'Radius.Compute/containers@2025-08-01-preview' =
     codeReference: 'nodejs/src/index.ts'
     containers: {
       ingestionLogs: {
-        image: posthogNodeImage.properties.imageReference
+        image: 'docker.io/posthog/posthog-node@sha256:863e76e040ad41aef79f605c33ec71f1529bddf94cfd88941c935da9bde97235'
         args: [
           '/bin/sh'
           '-c'
@@ -1101,7 +844,7 @@ resource ingestionSessionreplayContainer 'Radius.Compute/containers@2025-08-01-p
     codeReference: 'nodejs/src/index.ts'
     containers: {
       ingestionSessionreplay: {
-        image: posthogNodeImage.properties.imageReference
+        image: 'docker.io/posthog/posthog-node@sha256:863e76e040ad41aef79f605c33ec71f1529bddf94cfd88941c935da9bde97235'
         args: [
           '/bin/sh'
           '-c'
@@ -1159,7 +902,7 @@ resource ingestionTracesContainer 'Radius.Compute/containers@2025-08-01-preview'
     codeReference: 'nodejs/src/index.ts'
     containers: {
       ingestionTraces: {
-        image: posthogNodeImage.properties.imageReference
+        image: 'docker.io/posthog/posthog-node@sha256:863e76e040ad41aef79f605c33ec71f1529bddf94cfd88941c935da9bde97235'
         args: [
           '/bin/sh'
           '-c'
@@ -1257,7 +1000,7 @@ resource livestreamContainer 'Radius.Compute/containers@2025-08-01-preview' = {
     codeReference: 'livestream/main.go#L27'
     containers: {
       livestream: {
-        image: livestreamImage.properties.imageReference
+        image: 'ghcr.io/posthog/posthog/livestream@sha256:6926f340b72d609e43cee5aa8b75a85cfdc77d182e610dafafdd81d3b2ab53f5'
         env: {
           LIVESTREAM_JWT_SECRET: {
             valueFrom: {
@@ -1345,7 +1088,7 @@ resource personhogReplicaContainer 'Radius.Compute/containers@2025-08-01-preview
     codeReference: 'rust/personhog-replica/src/main.rs'
     containers: {
       personhogReplica: {
-        image: personhogReplicaImage.properties.imageReference
+        image: 'ghcr.io/posthog/posthog/personhog-replica@sha256:6f910c7bd09df3cee3a8007d2497e3483b1e43fc36ccc198ae23dc131f6b04bb'
         command: [
           '/bin/sh'
           '-c'
@@ -1388,7 +1131,7 @@ resource personhogRouterContainer 'Radius.Compute/containers@2025-08-01-preview'
     codeReference: 'rust/personhog-router/src/main.rs'
     containers: {
       personhogRouter: {
-        image: personhogRouterImage.properties.imageReference
+        image: 'ghcr.io/posthog/posthog/personhog-router@sha256:7e7a50cc2ec2aa73b95271a6d955a68f5ba7e7a92b313b3498fb470204540357'
         env: {
           BACKEND_TIMEOUT_MS: {
             value: '5000'
@@ -1424,7 +1167,7 @@ resource pluginsContainer 'Radius.Compute/containers@2025-08-01-preview' = {
     codeReference: 'nodejs/src/index.ts'
     containers: {
       plugins: {
-        image: posthogNodeImage.properties.imageReference
+        image: 'docker.io/posthog/posthog-node@sha256:863e76e040ad41aef79f605c33ec71f1529bddf94cfd88941c935da9bde97235'
         args: [
           '/bin/sh'
           '-c'
@@ -1537,7 +1280,7 @@ resource propertyDefsRsContainer 'Radius.Compute/containers@2025-08-01-preview' 
     codeReference: 'rust/property-defs-rs/src/main.rs'
     containers: {
       propertyDefsRs: {
-        image: propertyDefsRsImage.properties.imageReference
+        image: 'ghcr.io/posthog/posthog/property-defs-rs@sha256:c385998bf5ec7072825ebef2e080db36887924103013ba84eb29db7a9eb1deab'
         command: [
           '/bin/sh'
           '-c'
@@ -1578,7 +1321,7 @@ resource recordingApiContainer 'Radius.Compute/containers@2025-08-01-preview' = 
     codeReference: 'nodejs/src/index.ts'
     containers: {
       recordingApi: {
-        image: posthogNodeImage.properties.imageReference
+        image: 'docker.io/posthog/posthog-node@sha256:863e76e040ad41aef79f605c33ec71f1529bddf94cfd88941c935da9bde97235'
         args: [
           '/bin/sh'
           '-c'
@@ -1701,7 +1444,7 @@ resource replayCaptureContainer 'Radius.Compute/containers@2025-08-01-preview' =
     codeReference: 'rust/capture/src/main.rs'
     containers: {
       replayCapture: {
-        image: captureImage.properties.imageReference
+        image: 'ghcr.io/posthog/posthog/capture@sha256:89d816e0125632911001189fe3151cbee07a60f7b47997dc208f34978f03a476'
         env: {
           ADDRESS: {
             value: '0.0.0.0:3000'
@@ -1822,7 +1565,7 @@ resource temporalDjangoWorkerContainer 'Radius.Compute/containers@2025-08-01-pre
     codeReference: 'bin/temporal-django-worker'
     containers: {
       temporalDjangoWorker: {
-        image: posthogImage.properties.imageReference
+        image: 'docker.io/posthog/posthog@sha256:c84cde1bd3fcf31e09b8b23ea629dab55cf1f675709e83d6110618b994658b11'
         args: [
           '/bin/sh'
           '-c'
@@ -1992,7 +1735,7 @@ resource webContainer 'Radius.Compute/containers@2025-08-01-preview' = {
     codeReference: 'bin/docker'
     containers: {
       migrate: {
-        image: posthogImage.properties.imageReference
+        image: 'docker.io/posthog/posthog@sha256:c84cde1bd3fcf31e09b8b23ea629dab55cf1f675709e83d6110618b994658b11'
         args: [
           '/bin/sh'
           '-c'
@@ -2040,7 +1783,7 @@ resource webContainer 'Radius.Compute/containers@2025-08-01-preview' = {
         initContainer: true
       }
       web: {
-        image: posthogImage.properties.imageReference
+        image: 'docker.io/posthog/posthog@sha256:c84cde1bd3fcf31e09b8b23ea629dab55cf1f675709e83d6110618b994658b11'
         args: [
           '/bin/sh'
           '-c'
@@ -2190,7 +1933,7 @@ resource workerContainer 'Radius.Compute/containers@2025-08-01-preview' = {
     codeReference: 'bin/docker-worker-celery'
     containers: {
       worker: {
-        image: posthogImage.properties.imageReference
+        image: 'docker.io/posthog/posthog@sha256:c84cde1bd3fcf31e09b8b23ea629dab55cf1f675709e83d6110618b994658b11'
         args: [
           '/bin/sh'
           '-c'
