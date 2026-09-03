@@ -36,7 +36,7 @@ resource posthogApp 'Radius.Core/applications@2025-08-01-preview' = {
 }
 
 resource postgresDb 'Radius.Data/postgreSqlDatabases@2025-08-01-preview' = {
-  name: 'postgres'
+  name: 'posthog-postgres'
   properties: {
     environment: environment
     application: posthogApp.id
