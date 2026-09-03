@@ -22,7 +22,7 @@ param siteUrl string = 'http://localhost:8000'
 var clickhouseHost = clickhouseContainer.properties.hosts.clickhouse
 var kafkaHosts = '${kafkaContainer.properties.hosts.kafka}:9092'
 var objectStorageEndpoint = 'http://${objectstorageContainer.properties.hosts.objectstorage}:19000'
-var postgresDsn = 'postgres://posthog:$POSTHOG_DB_PASSWORD@${postgresDb.properties.host}:5432/posthog?sslmode=require'
+var postgresDsn = 'postgres://myadmin:$POSTHOG_DB_PASSWORD@${postgresDb.properties.host}:5432/posthog?sslmode=require'
 var redisHost = redisContainer.properties.hosts.redis
 var redisUrl = 'redis://${redisHost}:6379/'
 var seaweedfsEndpoint = 'http://${seaweedfsContainer.properties.hosts.seaweedfs}:8333'
@@ -44,7 +44,7 @@ resource postgresDb 'Radius.Data/postgreSqlDatabases@2025-08-01-preview' = {
     database: 'posthog'
     password: postgresPassword
     size: 'M'
-    username: 'posthog'
+    username: 'myadmin'
   }
 }
 
@@ -56,17 +56,6 @@ resource clickhouseDataVolume 'Radius.Compute/persistentVolumes@2025-08-01-previ
     allowedAccessModes: 'ReadWriteOnce'
     codeReference: 'docker-compose.hobby.yml#L734'
     sizeInGib: 100
-  }
-}
-
-resource kafkaDataVolume 'Radius.Compute/persistentVolumes@2025-08-01-preview' = {
-  name: 'kafka-data'
-  properties: {
-    environment: environment
-    application: posthogApp.id
-    allowedAccessModes: 'ReadWriteOnce'
-    codeReference: 'docker-compose.hobby.yml#L738'
-    sizeInGib: 50
   }
 }
 
@@ -983,9 +972,8 @@ resource kafkaContainer 'Radius.Compute/containers@2025-08-01-preview' = {
     }
     volumes: {
       data: {
-        persistentVolume: {
-          accessMode: 'ReadWriteOnce'
-          resourceId: kafkaDataVolume.id
+        emptyDir: {
+          medium: 'disk'
         }
       }
     }
@@ -1544,7 +1532,7 @@ resource temporalContainer 'Radius.Compute/containers@2025-08-01-preview' = {
             value: postgresDb.properties.host
           }
           POSTGRES_USER: {
-            value: 'posthog'
+            value: 'myadmin'
           }
         }
         ports: {
