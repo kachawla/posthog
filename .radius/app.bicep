@@ -1520,9 +1520,6 @@ resource temporalContainer 'Radius.Compute/containers@2025-08-01-preview' = {
           DB_PORT: {
             value: '5432'
           }
-          DYNAMIC_CONFIG_FILE_PATH: {
-            value: 'config/dynamicconfig/development-sql.yaml'
-          }
           ENABLE_ES: {
             value: 'false'
           }
